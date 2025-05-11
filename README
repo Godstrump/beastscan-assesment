@@ -32,7 +32,7 @@ This project is a solution to the BeastScan Frontend Developer Test Task. It imp
 ## Solution Approach
 
 ### Data Management
-- Data is fetched from a mock API (simulated for this demo)
+- Data is fetched from the API provided.
 - All changes (votes, edits) are stored in localStorage
 - Reset functionality clears localStorage and re-fetches initial data
 
@@ -51,7 +51,7 @@ This project is a solution to the BeastScan Frontend Developer Test Task. It imp
 
 ## Design Decisions & Assumptions
 
-1. **Mock API**: Since the actual API endpoint wasn't accessible, I've created a mock implementation that simulates fetching data with a timeout.
+1. **Mock API**: Used actual API endpoint.
 
 2. **Image Placeholders**: Used placeholder images as specified in the instructions.
 
