@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeastScan Ideas Widget</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        /* Reset & base styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            color: #2d3748;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .sort-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            background-color: white;
+            color: #4b5563;
+            cursor: pointer;
+        }
+
+        .reset-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            background-color: #ef4444;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .reset-button:hover {
+            background-color: #dc2626;
+        }
+
+        /* Cards grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+
+        .card-description {
+            color: #64748b;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .voting-buttons {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .vote-button {
+            display: flex;
+            align-items: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.3s;
+        }
+
+        .vote-button:hover {
+            color: #3b82f6;
+        }
+
+        .vote-button[data-type="upvote"]:hover {
+            color: #22c55e;
+        }
+
+        .vote-button[data-type="downvote"]:hover {
+            color: #ef4444;
+        }
+
+        .vote-count {
+            margin-left: 0.25rem;
+        }
+
+        .edit-button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #3b82f6;
+            transition: color 0.3s;
+        }
+
+        .edit-button:hover {
+            color: #1d4ed8;
+        }
+
+        .card-link {
+            display: block;
+            text-align: center;
+            padding: 0.75rem;
+            background-color: #3b82f6;
+            color: white;
+            text-decoration: none;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .card-link:hover {
+            background-color: #2563eb;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .close-button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.3s;
+        }
+
+        .close-button:hover {
+            color: #1f2937;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 1rem;
+        }
+
+        .button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button-secondary {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
+
+        .button-secondary:hover {
+            background-color: #d1d5db;
+        }
+
+        .button-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background-color: #2563eb;
+        }
+
+        /* Loading state */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error state */
+        .error-message {
+            padding: 1rem;
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            border-radius: 0.25rem;
+            color: #b91c1c;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .controls {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BeastScan Ideas</h1>
+            <div class="controls">
+                <select id="sortOrder" class="sort-select">
+                    <option value="default">Sort by Default</option>
+                    <option value="upvotes">Sort by Upvotes</option>
+                    <option value="downvotes">Sort by Downvotes</option>
+                </select>
+                <button id="resetButton" class="reset-button">Reset All</button>
+            </div>
+        </div>
+
+        <div id="ideasContainer" class="cards-grid">
+            <!-- Cards will be generated here -->
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for editing -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Idea</h3>
+                <button id="closeModal" class="close-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editIdeaId">
+                <div class="form-group">
+                    <label for="titleInput" class="form-label">Title</label>
+                    <input type="text" id="titleInput" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="descriptionInput" class="form-label">Description</label>
+                    <textarea id="descriptionInput" class="form-input" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="buttonLabelInput" class="form-label">Button Label</label>
+                    <input type="text" id="buttonLabelInput" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="buttonLinkInput" class="form-label">Button Link</label>
+                    <input type="url" id="buttonLinkInput" class="form-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelEdit" class="button button-secondary">Cancel</button>
+                <button id="saveEdit" class="button button-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const ideasContainer = document.getElementById('ideasContainer');
+        const sortOrderSelect = document.getElementById('sortOrder');
+        const resetButton = document.getElementById('resetButton');
+        const editModal = document.getElementById('editModal');
+        const closeModalButton = document.getElementById('closeModal');
+        const cancelEditButton = document.getElementById('cancelEdit');
+        const saveEditButton = document.getElementById('saveEdit');
+        const editIdeaIdInput = document.getElementById('editIdeaId');
+        const titleInput = document.getElementById('titleInput');
+        const descriptionInput = document.getElementById('descriptionInput');
+        const buttonLabelInput = document.getElementById('buttonLabelInput');
+        const buttonLinkInput = document.getElementById('buttonLinkInput');
+
+        // State
+        let ideas = [];
+        let currentSortOrder = 'default';
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            loadIdeas();
+            
+            // Event listeners
+            sortOrderSelect.addEventListener('change', handleSortChange);
+            resetButton.addEventListener('click', resetAllIdeas);
+            closeModalButton.addEventListener('click', closeModal);
+            cancelEditButton.addEventListener('click', closeModal);
+            saveEditButton.addEventListener('click', saveIdea);
+        });
+
+        // Load ideas from localStorage or fetch from API
+        async function loadIdeas() {
+            // Show loading state
+            ideasContainer.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            `;
+
+            // Try to get ideas from localStorage
+            const savedIdeas = localStorage.getItem('beastScanIdeas');
+            
+            if (savedIdeas) {
+                ideas = JSON.parse(savedIdeas);
+                renderIdeas();
+                return;
+            }
+
+            try {
+                // If no saved ideas, fetch from API (mocking API call)
+                const mockData = await axios.get('https://my.beastscan.com/test-kit');
+                ideas = mockData?.data?.map((row, idx) => ({ id: idx+1, ...row }));
+                console.log('ideas',ideas);
+                
+                localStorage.setItem('beastScanIdeas', JSON.stringify(ideas));
+                renderIdeas();
+            } catch (error) {
+                console.error('Error fetching data', error)
+            }
+        }
+
+        // Render ideas based on current sort order
+        function renderIdeas() {
+            // Sort ideas
+            const sortedIdeas = getSortedIdeas();
+            
+            // Clear container
+            ideasContainer.innerHTML = '';
+            
+            // Render each idea
+            sortedIdeas.forEach(idea => {
+                const card = createIdeaCard(idea);
+                ideasContainer.appendChild(card);
+            });
+        }
+
+        // Create a card element for an idea
+        function createIdeaCard(idea) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <img src="${idea.image}" alt="${idea.title}" class="card-image">
+                <div class="card-content">
+                    <h2 class="card-title">${idea.title}</h2>
+                    <p class="card-description">${idea.description}</p>
+                    <div class="card-actions">
+                        <div class="voting-buttons">
+                            <button class="vote-button" data-type="upvote" data-id="${idea.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="18 15 12 9 6 15"></polyline>
+                                </svg>
+                                <span class="vote-count">${idea.votes.up}</span>
+                            </button>
+                            <button class="vote-button" data-type="downvote" data-id="${idea.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                                <span class="vote-count">${idea.votes.down}</span>
+                            </button>
+                        </div>
+                        <button class="edit-button" data-id="${idea.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <a href="${idea.button.url}" class="card-link" target="_blank">${idea.button.label}</a>
+                </div>
+            `;
+
+            // Add event listeners
+            const upvoteButton = card.querySelector('[data-type="upvote"]');
+            const downvoteButton = card.querySelector('[data-type="downvote"]');
+            const editButton = card.querySelector('.edit-button');
+
+            upvoteButton.addEventListener('click', () => handleVote(idea.id, 'up'));
+            downvoteButton.addEventListener('click', () => handleVote(idea.id, 'down'));
+            editButton.addEventListener('click', () => openEditModal(idea.id));
+
+            return card;
+        }
+
+        // Handle voting (upvote or downvote)
+        function handleVote(ideaId, voteType) {
+            ideas = ideas.map(idea => {
+                if (idea.id === ideaId) {
+                    const isUp = voteType === 'up'
+                    return { 
+                        ...idea, 
+                        votes: { 
+                            ...idea.votes, 
+                            [voteType]: isUp ? idea.votes.up + 1 : 
+                            idea.votes.down !== 0 ? idea.votes.down - 1 : 0
+                        } 
+                    }
+                }
+                return idea;
+            });
+
+            // Save to localStorage
+            localStorage.setItem('beastScanIdeas', JSON.stringify(ideas));
+            
+            // Re-render
+            renderIdeas();
+        }
+
+        // Handle sort change
+        function handleSortChange(e) {
+            currentSortOrder = e.target.value;
+            console.log(currentSortOrder)
+            renderIdeas();
+        }
+
+        // Get sorted ideas based on current sort order
+        function getSortedIdeas() {
+            return [...ideas].sort((a, b) => {
+                if (currentSortOrder === 'upvotes') {
+                    return b.votes.up - a.votes.up;
+                } else if (currentSortOrder === 'downvotes') {
+                    return b.votes.down - a.votes.down;
+                }
+                return a.id - b.id; // default sorting by ID
+            });
+        }
+
+        // Reset all ideas to original state
+        function resetAllIdeas() {
+            localStorage.removeItem('beastScanIdeas');
+            ideas = [];
+            loadIdeas();
+        }
+
+        // Open edit modal
+        function openEditModal(ideaId) {
+            const idea = ideas.find(item => item.id === ideaId);
+            if (!idea) return;
+
+            // Set form values
+            editIdeaIdInput.value = idea.id;
+            titleInput.value = idea.title;
+            descriptionInput.value = idea.description;
+            buttonLabelInput.value = idea.button.label;
+            buttonLinkInput.value = idea.button.url;
+
+            // Show modal
+            editModal.classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            editModal.classList.remove('active');
+        }
+
+        // Save edited idea
+        function saveIdea() {
+            const ideaId = parseInt(editIdeaIdInput.value);
+            
+            ideas = ideas.map(idea => {
+                if (idea.id === ideaId) {
+                    return {
+                        ...idea,
+                        title: titleInput.value,
+                        description: descriptionInput.value,
+                        button: {
+                            label: buttonLabelInput.value,
+                            url: buttonLinkInput.value
+                        }
+                    };
+                }
+                return idea;
+            });
+
+            // Save to localStorage
+            localStorage.setItem('beastScanIdeas', JSON.stringify(ideas));
+            
+            // Close modal and re-render
+            closeModal();
+            renderIdeas();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+# BeastScan Frontend Challenge - Idea Voting Widget
+
+## Overview
+This project is a solution to the BeastScan Frontend Developer Test Task. It implements a dynamic voting widget that displays interactive idea cards with upvote/downvote functionality and editable content.
+
+## Features Implemented
+
+### Core Features
+- Dynamic card generation based on API data (mocked for demonstration)
+- Upvote and downvote functionality with real-time updates
+- Editable content via modal with changes persisting after page reload
+- Responsive design for various screen sizes
+
+### Bonus Features
+- Sorting functionality based on upvotes or downvotes
+- "Reset All" button to restore original data
+- Local storage implementation for data persistence
+
+## Technologies Used
+
+### React Implementation
+- **React** with hooks for state management and component lifecycle
+- **CSS** using Tailwind utility classes for styling
+- **localStorage API** for data persistence
+
+### Vanilla JS Implementation
+- **HTML5** for markup and structure
+- **CSS3** with custom properties for styling
+- **Vanilla JavaScript** for DOM manipulation and event handling
+- **localStorage API** for data persistence
+
+## Solution Approach
+
+### Data Management
+- Data is fetched from a mock API (simulated for this demo)
+- All changes (votes, edits) are stored in localStorage
+- Reset functionality clears localStorage and re-fetches initial data
+
+### UI/UX Considerations
+- Clean, modern card design with hover effects
+- Loading state with spinner during initial data fetch
+- Error handling for API failures
+- Modal for editing card content
+- Responsive layout that works on mobile, tablet, and desktop
+
+### Code Organization
+- Clear separation of concerns (data fetching, rendering, event handling)
+- Well-structured component hierarchy in React version
+- Modular functions in vanilla JS version
+- Consistent naming conventions and code style
+
+## Design Decisions & Assumptions
+
+1. **Mock API**: Since the actual API endpoint wasn't accessible, I've created a mock implementation that simulates fetching data with a timeout.
+
+2. **Image Placeholders**: Used placeholder images as specified in the instructions.
+
+3. **Persistence**: Implemented localStorage for data persistence to maintain state between page refreshes.
+
+4. **Error Handling**: Added basic error handling for API failures.
+
+5. **Simplified Authentication**: No authentication was implemented as it wasn't part of the requirements.
+
+## How to Run
+
+### React Version
+1. Import the React component into your project
+2. Add the `<IdeaVotingWidget />` component to your page
+
+### Vanilla JS Version
+1. Simply open the HTML file in any modern web browser
+2. Alternatively, host it on any static file server
+
+## Future Improvements
+
+With more time, I would add:
+- Proper API integration with error handling
+- Drag-and-drop functionality for card reordering
+- Animation effects for better user experience
+- Form validation in the edit modal
+- Unit tests for core functionality
+- Better accessibility features
+
+## Time Spent
+Approximately 2.5 hours were spent on this solution, including both implementations.
