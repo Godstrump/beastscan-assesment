@@ -64,8 +64,7 @@ This project is a solution to the BeastScan Frontend Developer Test Task. It imp
 ## How to Run
 
 ### React Version
-1. Import the React component into your project
-2. Add the `<IdeaVotingWidget />` component to your page
+1. Clone the repo and run using yarn dev or npm run dev.
 
 ### Vanilla JS Version
 1. Simply open the HTML file in any modern web browser
@@ -82,4 +81,4 @@ With more time, I would add:
 - Better accessibility features
 
 ## Time Spent
-Approximately 2.5 hours were spent on this solution, including both implementations.
+Approximately 2.9 hours were spent on this solution, including both implementations.
